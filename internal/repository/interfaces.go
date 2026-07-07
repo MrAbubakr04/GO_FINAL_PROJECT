@@ -33,3 +33,17 @@ type ClientRepository interface {
 	CreateUser(ctx context.Context, tx pgx.Tx, user domain.User) (*domain.User, error)
 	BeginTx(ctx context.Context) (pgx.Tx, error)
 }
+
+type TransactionRepository interface {
+	GetPhoneByNumber(ctx context.Context, phoneNum string) (*domain.Phone, error)
+	GetAccountByPhone(ctx context.Context, phoneNum string) (*domain.Account, error)
+	GetAccountByID(ctx context.Context, accountID int64) (*domain.Account, error)
+	GetAccountForUpdate(ctx context.Context, tx pgx.Tx, accountID int64) (*domain.Account, error)
+	GetClientByID(ctx context.Context, clientID int64) (*domain.Client, error)
+	IsAccountIdentified(ctx context.Context, tx pgx.Tx, accountID int64) (bool, error)
+	UpdateAccountBalance(ctx context.Context, tx pgx.Tx, accountID int64, delta int64) error
+	CreateTransaction(ctx context.Context, tx pgx.Tx, txn domain.Transaction) (*domain.Transaction, error)
+	BeginTx(ctx context.Context) (pgx.Tx, error)
+	ListAccountTransactions(ctx context.Context, accountID int64) ([]domain.Transaction, error)
+	ListClientTransactions(ctx context.Context, clientID int64) ([]domain.Transaction, error)
+}

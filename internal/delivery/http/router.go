@@ -8,12 +8,14 @@ import (
 	authhandler "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/delivery/http/handler"
 	authusecase "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/usecase/auth"
 	clientusecase "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/usecase/client"
+	transactionusecase "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/usecase/transaction"
 )
 
-func NewRouter(authService *authusecase.Service, clientService *clientusecase.Service) http.Handler {
+func NewRouter(authService *authusecase.Service, clientService *clientusecase.Service, transactionService *transactionusecase.Service) http.Handler {
 	mux := http.NewServeMux()
 	authHandler := authhandler.NewAuthHandler(authService)
 	clientHandler := authhandler.NewClientHandler(clientService)
+	transactionHandler := authhandler.NewTransactionHandler(transactionService)
 
 	mux.HandleFunc("/auth/check-phone", authHandler.CheckPhone)
 	mux.HandleFunc("/auth/register", authHandler.Register)
@@ -62,6 +64,34 @@ func NewRouter(authService *authusecase.Service, clientService *clientusecase.Se
 		}
 	})
 	mux.HandleFunc("/clients/identify", clientHandler.Identify)
+	mux.HandleFunc("/transactions/deposit", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		transactionHandler.Deposit(w, r)
+	})
+	mux.HandleFunc("/transactions/transfer", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		transactionHandler.Transfer(w, r)
+	})
+	mux.HandleFunc("/transactions/account/{account_id}", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		transactionHandler.AccountHistory(w, r)
+	})
+	mux.HandleFunc("/transactions/client/{client_id}", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+		transactionHandler.ClientHistory(w, r)
+	})
 
 	return mux
 }

@@ -10,6 +10,7 @@ import (
 	repositorypostgres "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/repository/postgres"
 	authusecase "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/usecase/auth"
 	clientusecase "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/usecase/client"
+	transactionusecase "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/usecase/transaction"
 )
 
 func main() {
@@ -27,9 +28,11 @@ func main() {
 
 	authRepo := repositorypostgres.NewAuthRepository(db)
 	clientRepo := repositorypostgres.NewClientRepository(db)
+	transactionRepo := repositorypostgres.NewTransactionRepository(db)
 	authService := authusecase.NewService(authRepo, nil)
 	clientService := clientusecase.NewService(clientRepo)
-	router := internalhttp.NewRouter(authService, clientService)
+	transactionService := transactionusecase.NewService(transactionRepo)
+	router := internalhttp.NewRouter(authService, clientService, transactionService)
 
 	log.Println("server listening on :8080")
 	if err := http.ListenAndServe(":8080", router); err != nil {
