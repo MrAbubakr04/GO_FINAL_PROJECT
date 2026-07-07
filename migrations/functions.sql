@@ -21,3 +21,15 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+----------- NORMALIZE_PHONE_NUM -----------------------------
+create or replace function normilize_phone_num()
+returns trigger as $$
+begin
+	IF NEW.phone_num IS NOT NULL THEN
+        -- Оставляем только цифры
+        NEW.phone_num := regexp_replace(NEW.phone_num, '[^0-9]', '', 'g');
+    END IF;
+	return new;
+end;
+$$ language plpgsql;

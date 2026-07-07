@@ -9,6 +9,11 @@ CREATE TABLE account_statuses (
     CONSTRAINT account_statuses_code_uk UNIQUE (code)
 );
 
+insert into account_statuses (code, description) values
+    ('active', 'Active'),
+    ('blocked', 'Blocked'),
+    ('deleted', 'Deleted');
+
 ------------ ACCOUNTS -----------------------------------------------
 CREATE TABLE accounts (
     id BIGSERIAL,

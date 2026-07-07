@@ -1,91 +1,27 @@
-Логика слоёв (очень важно)
-1. domain (ядро, без зависимостей)
+# Go Final Project
 
-Тут только бизнес-сущности:
+## Текущий статус
 
-type Account struct {
-    ID      int64
-    UserID  int64
-    Balance float64
-}
+В проект добавлена базовая реализация аутентификации по номеру телефона и PIN:
 
-❌ Никакого SQL, HTTP, JSON бизнес-логики
-2. usecase (бизнес-логика)
+- endpoint проверки телефона: POST /auth/check-phone
+- endpoint регистрации: POST /auth/register
+- endpoint авторизации: POST /auth/login
+- сервис авторизации в слое usecase/auth
+- repository для работы с телефонами и аккаунтами
+- JWT-пара для авторизации
+- unit-тесты для базовой бизнес-логики
 
-Пример:
+## Архитектура
 
-type AccountService struct {
-    repo AccountRepository
-}
+- domain: модели домена и ошибки
+- usecase/auth: бизнес-логика проверки номера, регистрации и логина
+- repository/postgres: доступ к таблицам phones и accounts
+- delivery/http: HTTP-обработчики и маршруты
 
-func (s *AccountService) Deposit(userID int64, amount float64) error {
-    if amount <= 0 {
-        return errors.New("invalid amount")
-    }
+## Примечания
 
-    return s.repo.AddBalance(userID, amount)
-}
-
-👉 Здесь вся логика кошелька:
-
-перевод
-пополнение
-проверка баланса
-3. repository (работа с БД)
-
-Интерфейс:
-
-type AccountRepository interface {
-    GetByUserID(userID int64) (*domain.Account, error)
-    AddBalance(userID int64, amount float64) error
-}
-
-Реализация PostgreSQL:
-
-type accountRepo struct {
-    db *sql.DB
-}
-4. delivery (HTTP слой)
-
-Handler:
-
-func (h *AccountHandler) Deposit(w http.ResponseWriter, r *http.Request) {
-    // parse request
-    // call usecase
-    // return response
-}
-5. cmd/api/main.go (точка входа)
-func main() {
-    db := postgres.Connect()
-
-    accountRepo := repository.NewAccountRepo(db)
-    accountService := usecase.NewAccountService(accountRepo)
-
-    handler := handler.NewAccountHandler(accountService)
-
-    router := http.NewRouter(handler)
-
-    http.ListenAndServe(":8080", router)
-}
-🔥 Поток запроса (важно понимать)
-HTTP Request
-   ↓
-delivery (handler)
-   ↓
-usecase (business logic)
-   ↓
-repository (DB)
-   ↓
-PostgreSQL
-💡 Минимальный старт (если хочешь проще)
-
-Если сейчас тяжело — начни так:
-
-cmd/
-internal/
-    domain/
-    usecase/
-    repository/
-    delivery/
-
-И только потом дроби дальше.
+- Поиск телефона и аккаунта учитывает только активные записи с active_to IS NULL.
+- Регистрация выполняется в одной транзакции.
+- PIN хранится в виде bcrypt-хеша.
+- Для запуска сервера используйте команду: go run ./cmd/api
