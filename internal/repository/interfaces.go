@@ -16,3 +16,20 @@ type AuthRepository interface {
 	CreatePhone(ctx context.Context, tx pgx.Tx, phone domain.Phone) (*domain.Phone, error)
 	CreateAccount(ctx context.Context, tx pgx.Tx, account domain.Account) (*domain.Account, error)
 }
+
+type ClientRepository interface {
+	GetClientByTIN(ctx context.Context, tin string) (*domain.Client, error)
+	GetClientByID(ctx context.Context, id int64) (*domain.Client, error)
+	CreateClient(ctx context.Context, tx pgx.Tx, client domain.Client) (*domain.Client, error)
+	UpdateClient(ctx context.Context, tx pgx.Tx, client domain.Client) (*domain.Client, error)
+	DeactivateClient(ctx context.Context, tx pgx.Tx, clientID int64) error
+	GetActivePhoneByNumberAndClient(ctx context.Context, phoneNum string, clientID int64) (*domain.Phone, error)
+	GetActivePhoneByNumber(ctx context.Context, phoneNum string) (*domain.Phone, error)
+	GetActiveAccountByPhone(ctx context.Context, phoneNum string) (*domain.Account, error)
+	GetActiveAccountsByClientID(ctx context.Context, clientID int64) ([]domain.Account, error)
+	DeactivateAccount(ctx context.Context, tx pgx.Tx, accountID int64) error
+	DeactivatePhone(ctx context.Context, tx pgx.Tx, phoneID int64) error
+	GetUserByLogin(ctx context.Context, login string) (*domain.User, error)
+	CreateUser(ctx context.Context, tx pgx.Tx, user domain.User) (*domain.User, error)
+	BeginTx(ctx context.Context) (pgx.Tx, error)
+}

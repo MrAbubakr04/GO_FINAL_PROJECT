@@ -9,6 +9,7 @@ import (
 	"github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/pkg/postgres"
 	repositorypostgres "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/repository/postgres"
 	authusecase "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/usecase/auth"
+	clientusecase "github.com/MrAbubakr04/GO_FINAL_PROJECT/internal/usecase/client"
 )
 
 func main() {
@@ -24,9 +25,11 @@ func main() {
 	}
 	logger.Debug("Соединение с БД: Postgres успешно установлено.", nil)
 
-	repo := repositorypostgres.NewAuthRepository(db)
-	authService := authusecase.NewService(repo, nil)
-	router := internalhttp.NewRouter(authService)
+	authRepo := repositorypostgres.NewAuthRepository(db)
+	clientRepo := repositorypostgres.NewClientRepository(db)
+	authService := authusecase.NewService(authRepo, nil)
+	clientService := clientusecase.NewService(clientRepo)
+	router := internalhttp.NewRouter(authService, clientService)
 
 	log.Println("server listening on :8080")
 	if err := http.ListenAndServe(":8080", router); err != nil {
