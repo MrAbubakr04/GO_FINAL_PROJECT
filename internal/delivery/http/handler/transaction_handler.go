@@ -72,6 +72,15 @@ func (h *TransactionHandler) Transfer(w http.ResponseWriter, r *http.Request) {
 		case errors.Is(err, domain.ErrInvalidAmount):
 			status = http.StatusUnprocessableEntity
 			code = "invalid_amount"
+		case errors.Is(err, domain.ErrInvalidInput):
+			status = http.StatusUnprocessableEntity
+			code = "invalid_input"
+		case errors.Is(err, domain.ErrPhoneNotFound):
+			status = http.StatusNotFound
+			code = "phone_not_found"
+		case errors.Is(err, domain.ErrPhoneInactive):
+			status = http.StatusForbidden
+			code = "phone_inactive"
 		case errors.Is(err, domain.ErrAccountNotFound):
 			status = http.StatusNotFound
 			code = "account_not_found"

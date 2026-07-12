@@ -222,29 +222,53 @@ func (s *Service) DeactivateClient(ctx context.Context, clientID int64) error {
 }
 
 func (s *Service) IdentifyClient(ctx context.Context, input IdentifyInput) (bool, error) {
-	client, err := s.repo.GetClientByTIN(ctx, input.TIN)
+	phoneNum := strings.TrimSpace(input.Phone)
+	tin := strings.TrimSpace(input.TIN)
+	if phoneNum == "" || tin == "" {
+		return false, domain.ErrInvalidInput
+	}
+
+	client, err := s.repo.GetClientByTIN(ctx, tin)
 	if err != nil {
 		return false, err
 	}
 	if client == nil {
 		return false, domain.ErrClientNotFound
 	}
-	phone, err := s.repo.GetActivePhoneByNumber(ctx, input.Phone)
+	phone, err := s.repo.GetActivePhoneByNumber(ctx, phoneNum)
 	if err != nil {
 		return false, err
 	}
 	if phone == nil {
 		return false, domain.ErrPhoneNotFound
 	}
-	if phone.ClientID == nil || *phone.ClientID != client.ID {
+	if phone.ClientID != nil && *phone.ClientID != client.ID {
 		return false, domain.ErrPhoneAlreadyUsed
 	}
-	account, err := s.repo.GetActiveAccountByPhone(ctx, input.Phone)
+	account, err := s.repo.GetActiveAccountByPhone(ctx, phoneNum)
 	if err != nil {
 		return false, err
 	}
 	if account == nil {
 		return false, domain.ErrAccountNotFound
+	}
+	if phone.ClientID == nil {
+		tx, err := s.repo.BeginTx(ctx)
+		if err != nil {
+			return false, err
+		}
+		defer func() {
+			if err != nil {
+				_ = tx.Rollback(ctx)
+			}
+		}()
+
+		if err = s.repo.AttachPhoneToClient(ctx, tx, phone.ID, client.ID); err != nil {
+			return false, err
+		}
+		if err = tx.Commit(ctx); err != nil {
+			return false, err
+		}
 	}
 	return true, nil
 }

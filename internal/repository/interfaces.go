@@ -25,6 +25,7 @@ type ClientRepository interface {
 	DeactivateClient(ctx context.Context, tx pgx.Tx, clientID int64) error
 	GetActivePhoneByNumberAndClient(ctx context.Context, phoneNum string, clientID int64) (*domain.Phone, error)
 	GetActivePhoneByNumber(ctx context.Context, phoneNum string) (*domain.Phone, error)
+	AttachPhoneToClient(ctx context.Context, tx pgx.Tx, phoneID int64, clientID int64) error
 	GetActiveAccountByPhone(ctx context.Context, phoneNum string) (*domain.Account, error)
 	GetActiveAccountsByClientID(ctx context.Context, clientID int64) ([]domain.Account, error)
 	DeactivateAccount(ctx context.Context, tx pgx.Tx, accountID int64) error

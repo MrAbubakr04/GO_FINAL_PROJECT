@@ -74,7 +74,7 @@ func (r *TransactionRepository) GetAccountForUpdate(ctx context.Context, tx pgx.
 		FROM accounts a
 		LEFT JOIN account_statuses s ON s.id = a.status_id
 		WHERE a.id = $1 AND a.active_to IS NULL
-		FOR UPDATE
+		FOR UPDATE OF a
 	`, accountID).Scan(&account.ID, &account.PhoneNum, &account.PINHash, &account.BalanceTJ, &account.BalanceRU, &account.BalanceEN, &account.Device, &account.IsActive, &account.StatusID, &account.StatusCode, &account.ActiveTo)
 	if err != nil {
 		if err == pgx.ErrNoRows {

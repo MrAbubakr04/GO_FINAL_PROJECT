@@ -58,7 +58,7 @@ func TestDepositRejectsInvalidAmount(t *testing.T) {
 
 func TestTransferRejectsSameAccount(t *testing.T) {
 	svc := NewService(&stubTransactionRepo{})
-	_, err := svc.Transfer(context.Background(), TransferInput{FromAccountID: 1, ToAccountID: 1, Amount: 10})
+	_, err := svc.Transfer(context.Background(), TransferInput{FromPhone: "+998901234567", ToPhone: "+998901234567", Amount: 10})
 	if err == nil {
 		t.Fatal("expected same account error")
 	}

@@ -123,6 +123,21 @@ func (r *ClientRepository) GetActivePhoneByNumber(ctx context.Context, phoneNum 
 	return &phone, nil
 }
 
+func (r *ClientRepository) AttachPhoneToClient(ctx context.Context, tx pgx.Tx, phoneID int64, clientID int64) error {
+	tag, err := tx.Exec(ctx, `
+		UPDATE phones
+		SET client_id = $1, dt_updated = NOW()
+		WHERE id = $2 AND client_id IS NULL AND active_to IS NULL
+	`, clientID, phoneID)
+	if err != nil {
+		return fmt.Errorf("attach phone to client: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return domain.ErrPhoneAlreadyUsed
+	}
+	return nil
+}
+
 func (r *ClientRepository) GetActiveAccountByPhone(ctx context.Context, phoneNum string) (*domain.Account, error) {
 	var account domain.Account
 	err := r.db.QueryRow(ctx, `
